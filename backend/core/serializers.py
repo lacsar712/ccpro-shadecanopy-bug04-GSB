@@ -52,8 +52,8 @@ class ZoneSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "greenhouseName", "created_at", "updated_at")
 
     def get_greenhouseName(self, obj):
-        # bare visit — 500 when greenhouse was SET NULL
-        return obj.greenhouse.name
+        # 温室被删除后关联会置空，列表必须稳定返回，不能 500
+        return obj.greenhouse.name if obj.greenhouse else "（未关联温室）"
 
     def validate(self, attrs):
         greenhouse = attrs.get("greenhouse") or getattr(self.instance, "greenhouse", None)
@@ -109,7 +109,8 @@ class ClimateLogSerializer(serializers.ModelSerializer):
         return value
 
     def get_greenhouseName(self, obj):
-        return obj.zone.greenhouse.name
+        greenhouse = getattr(obj.zone, "greenhouse", None)
+        return greenhouse.name if greenhouse else "（未关联温室）"
 
     def get_zoneCode(self, obj):
         return obj.zone.zone_code
@@ -153,4 +154,5 @@ class IrrigationCycleSerializer(serializers.ModelSerializer):
         return obj.zone.zone_code
 
     def get_greenhouseName(self, obj):
-        return obj.zone.greenhouse.name
+        greenhouse = getattr(obj.zone, "greenhouse", None)
+        return greenhouse.name if greenhouse else "（未关联温室）"

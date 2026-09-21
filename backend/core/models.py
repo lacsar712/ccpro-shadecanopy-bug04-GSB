@@ -52,7 +52,8 @@ class Zone(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.greenhouse.name}/{self.zone_code}"
+        gh_name = self.greenhouse.name if self.greenhouse else "（未关联温室）"
+        return f"{gh_name}/{self.zone_code}"
 
 
 class ClimateLog(models.Model):
