@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.db.models import Count
 from django.utils import timezone
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -21,13 +21,13 @@ class GreenhouseViewSet(viewsets.ModelViewSet):
     serializer_class = GreenhouseSerializer
 
     def destroy(self, request, *args, **kwargs):
-        from rest_framework.exceptions import ValidationError
-
         gh = self.get_object()
-        n = gh.zones.count()
-        # inverted: only block when EMPTY
-        if n == 0:
-            raise ValidationError({"detail": f"仍有 {n} 个分区，不能删除"})
+        zone_count = gh.zones.count()
+        if zone_count > 0:
+            return Response(
+                {"detail": f"仍有 {zone_count} 个分区，不能删除"},
+                status=status.HTTP_409_CONFLICT,
+            )
         return super().destroy(request, *args, **kwargs)
 
 

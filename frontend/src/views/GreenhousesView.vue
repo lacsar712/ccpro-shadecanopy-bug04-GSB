@@ -60,9 +60,14 @@ async function save() {
 }
 
 async function remove(id) {
-  if (!confirm('确认删除该温室？分区及相关记录将一并删除。')) return
-  await api.delete(`/greenhouses/${id}/`)
-  await load()
+  if (!confirm('确认删除该温室？仅当温室下没有分区时才可删除。')) return
+  error.value = ''
+  try {
+    await api.delete(`/greenhouses/${id}/`)
+    await load()
+  } catch (e) {
+    error.value = e.response?.data?.detail || '删除失败'
+  }
 }
 
 onMounted(load)
